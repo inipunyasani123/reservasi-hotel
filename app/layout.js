@@ -6,10 +6,10 @@ import Kaki from '@/components/Kaki';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 const fraunces = Fraunces({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-fraunces', display: 'swap' });
 
-const __jsonld = {"@context":"https://schema.org","@type":"WebSite","name":"Tanjung Lengkung","description":"Penginapan kecil di pesisir timur Lombok: Kamar Taman, Suite Teluk, dan Vila Kolam. Cek ketersediaan per malam, tarif akhir pekan, dan pesan tanpa ribet.","url":"https://reservasi-hotel-kappa.vercel.app","inLanguage":"id"};
+const __jsonld = {"@context":"https://schema.org","@type":"WebSite","name":"Tanjung Lengkung","description":"Penginapan kecil di pesisir timur Lombok: Kamar Taman, Suite Teluk, dan Vila Kolam. Cek ketersediaan per malam, tarif akhir pekan, dan pesan tanpa ribet.","url":"https://reservasi-hotel.pintuweb.id","inLanguage":"id"};
 
 export const metadata = {
-  metadataBase: new URL("https://reservasi-hotel-kappa.vercel.app"),
+  metadataBase: new URL("https://reservasi-hotel.pintuweb.id"),
   title: { default: "Tanjung Lengkung — Pesan kamar di ujung teluk", template: "%s — Tanjung Lengkung" },
   description: "Penginapan kecil di pesisir timur Lombok: Kamar Taman, Suite Teluk, dan Vila Kolam. Cek ketersediaan per malam, tarif akhir pekan, dan pesan tanpa ribet.",
   applicationName: "Tanjung Lengkung",
@@ -17,11 +17,11 @@ export const metadata = {
   authors: [{ name: "Tanjung Lengkung" }],
   creator: "Tanjung Lengkung",
   publisher: "Tanjung Lengkung",
-  alternates: { canonical: "https://reservasi-hotel-kappa.vercel.app" },
+  alternates: { canonical: "https://reservasi-hotel.pintuweb.id" },
   openGraph: {
     type: "website",
     locale: "id_ID",
-    url: "https://reservasi-hotel-kappa.vercel.app",
+    url: "https://reservasi-hotel.pintuweb.id",
     siteName: "Tanjung Lengkung",
     title: "Tanjung Lengkung — Pesan kamar di ujung teluk",
     description: "Penginapan kecil di pesisir timur Lombok: Kamar Taman, Suite Teluk, dan Vila Kolam. Cek ketersediaan per malam, tarif akhir pekan, dan pesan tanpa ribet.",

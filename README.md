@@ -2,7 +2,7 @@
 
 Penginapan kecil (fiktif) di pesisir timur Lombok. Paradigma **rentang tanggal**: check-in/check-out, ketersediaan dihitung per malam, tarif malam biasa dan akhir pekan.
 
-**Demo live:** https://reservasi-hotel-kappa.vercel.app
+**Demo live:** https://reservasi-hotel.pintuweb.id
 
 ![Tangkapan layar](public/og.jpg)
 

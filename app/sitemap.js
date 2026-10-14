@@ -1,6 +1,6 @@
 import { rooms } from '@/lib/data';
 
-const URL = 'https://reservasi-hotel-kappa.vercel.app';
+const URL = 'https://reservasi-hotel.pintuweb.id';
 
 export default function sitemap() {
   const now = new Date();

@@ -1,11 +1,12 @@
 import DaftarPesanan from '@/components/DaftarPesanan';
+import { halaman } from '@/lib/seo';
 
-export const metadata = {
-  title: 'Pesanan saya',
-  description: 'Lihat dan batalkan pesanan kamar Tanjung Lengkung yang tersimpan di peramban ini.',
-  alternates: { canonical: '/pesanan' },
+export const metadata = halaman({
+  judul: 'Pesanan saya',
+  deskripsi: 'Lihat dan batalkan pesanan kamar Tanjung Lengkung yang tersimpan di peramban ini.',
+  path: '/pesanan',
   robots: { index: false, follow: true },
-};
+});
 
 export default function PesananPage() {
   return (

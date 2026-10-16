@@ -1,19 +1,17 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarCheck, CalendarX, Users, Minus, Plus, Check, BedDouble, Maximize, Moon, User, Phone, ArrowRight } from 'lucide-react';
 import { hotel, rooms, tarif, akhirPekan, daftarMalam, sisaUnit } from '@/lib/data';
 import { useLocalStorage } from '@/lib/useLocalStorage';
 import { useHariIni } from '@/lib/useHariIni';
+import { useDialog } from '@/lib/useDialog';
 import { tambahHari, selisihHari, fmtTanggal, rupiah, kodePesan } from '@/lib/waktu';
 
 const KOSONG = { nama: '', hp: '', permintaan: '' };
 
 export default function HotelApp() {
-  const sp = useSearchParams();
   const { hari } = useHariIni();
   const [punyaku, setPunyaku] = useLocalStorage('tanjunglengkung.pesanan', []);
   const [checkIn, setCheckIn] = useState('');
@@ -22,15 +20,30 @@ export default function HotelApp() {
   const [roomId, setRoomId] = useState(null);
   const [form, setForm] = useState(KOSONG);
   const [done, setDone] = useState(null);
+  const dialog = useDialog(!!done, () => setDone(null));
+  const judulRingkasan = useRef(null);
+  const [gulir, setGulir] = useState(false);
 
-  // Tanggal bawaan: malam ini sampai besok (WIB). ?kamar= dari halaman detail memilih kamarnya.
+  // Tanggal bawaan: malam ini sampai besok (WIB). ?kamar= dari halaman detail memilih kamarnya
+  // (dibaca setelah dimuat supaya halaman tetap dirender di server).
   useEffect(() => {
     if (!hari || checkIn) return;
     setCheckIn(hari);
     setCheckOut(tambahHari(hari, 1));
-    const k = sp.get('kamar');
+    const k = new URLSearchParams(window.location.search).get('kamar');
     if (rooms.some((r) => r.id === k)) setRoomId(k);
-  }, [hari, checkIn, sp]);
+  }, [hari, checkIn]);
+
+  // Setelah memilih kamar, ringkasan pesanan (di bawah daftar) digulir ke layar dan judulnya difokus.
+  useEffect(() => {
+    if (!gulir) return;
+    setGulir(false);
+    const h = judulRingkasan.current;
+    if (!h) return;
+    h.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    h.focus({ preventScroll: true });
+  }, [gulir]);
+  const pilihKamar = (id) => { setRoomId(id); setGulir(true); };
 
   const nights = checkIn && checkOut ? Math.max(0, selisihHari(checkIn, checkOut)) : 0;
   const terlaluLama = nights > hotel.malamMaks;
@@ -62,9 +75,9 @@ export default function HotelApp() {
   };
 
   return (
-    <div>
-      <section className="relative flex h-[380px] items-end overflow-hidden md:h-[440px]">
-        <Image src="/images/pantai-senja.webp" alt="" fill priority sizes="100vw" className="object-cover" />
+    <main>
+      <section className="relative flex h-[340px] items-end overflow-hidden md:h-[440px]">
+        <Image src="/images/pantai-senja.webp" alt="" fill priority fetchPriority="high" sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-teal-950/60 via-teal-950/30 to-[#f6f5f1]" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-5xl px-6 pb-16">
           <p className="font-display text-sm uppercase tracking-[0.3em] text-white">{hotel.lokasi}</p>
@@ -73,31 +86,32 @@ export default function HotelApp() {
         </div>
       </section>
 
-      <div className="sticky top-[64px] z-20 mx-auto -mt-10 w-full max-w-5xl px-6">
+      {/* Di layar lebar kartu tanggal ikut lengket; di ponsel tidak, supaya tidak menutupi separuh layar. */}
+      <div data-kartu-tanggal className="relative z-20 mx-auto -mt-10 w-full max-w-5xl px-6 sm:sticky sm:top-[64px]">
         <div className="flex flex-col items-stretch gap-3 rounded-2xl border border-white/60 bg-white/90 p-4 shadow-xl backdrop-blur-xl sm:flex-row sm:items-center">
           <SearchField icon={CalendarCheck} label="Check-in" htmlFor="tgl-masuk">
-            <input id="tgl-masuk" type="date" min={hari || undefined} max={hari ? tambahHari(hari, 180) : undefined} value={checkIn} onChange={(e) => gantiMasuk(e.target.value)} className="w-full bg-transparent text-sm font-semibold text-teal-950 outline-none" />
+            <input id="tgl-masuk" type="date" min={hari || undefined} max={hari ? tambahHari(hari, 180) : undefined} value={checkIn} onChange={(e) => gantiMasuk(e.target.value)} className="w-full bg-transparent py-1 text-sm font-semibold text-teal-950 outline-none" />
           </SearchField>
           <div className="hidden h-10 w-px bg-stone-200 sm:block" aria-hidden="true" />
           <SearchField icon={CalendarX} label="Check-out" htmlFor="tgl-keluar">
-            <input id="tgl-keluar" type="date" min={checkIn ? tambahHari(checkIn, 1) : undefined} max={checkIn ? tambahHari(checkIn, hotel.malamMaks) : undefined} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="w-full bg-transparent text-sm font-semibold text-teal-950 outline-none" />
+            <input id="tgl-keluar" type="date" min={checkIn ? tambahHari(checkIn, 1) : undefined} max={checkIn ? tambahHari(checkIn, hotel.malamMaks) : undefined} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="w-full bg-transparent py-1 text-sm font-semibold text-teal-950 outline-none" />
           </SearchField>
           <div className="hidden h-10 w-px bg-stone-200 sm:block" aria-hidden="true" />
           <SearchField icon={Users} label="Tamu">
             <div className="flex items-center gap-3">
-              <button type="button" onClick={() => setGuests((g) => Math.max(1, g - 1))} className="flex h-7 w-7 items-center justify-center rounded-full border border-stone-300 text-stone-700 hover:bg-stone-100" aria-label="Kurangi tamu"><Minus size={14} /></button>
-              <span className="text-sm font-bold" aria-live="polite">{guests}</span>
-              <button type="button" onClick={() => setGuests((g) => Math.min(4, g + 1))} className="flex h-7 w-7 items-center justify-center rounded-full border border-stone-300 text-stone-700 hover:bg-stone-100" aria-label="Tambah tamu"><Plus size={14} /></button>
+              <button type="button" onClick={() => setGuests((g) => Math.max(1, g - 1))} disabled={guests <= 1} className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 text-stone-700 hover:bg-stone-100 disabled:opacity-40" aria-label="Kurangi tamu"><Minus size={15} /></button>
+              <span className="w-4 text-center text-sm font-bold" aria-live="polite">{guests}</span>
+              <button type="button" onClick={() => setGuests((g) => Math.min(4, g + 1))} disabled={guests >= 4} className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 text-stone-700 hover:bg-stone-100 disabled:opacity-40" aria-label="Tambah tamu"><Plus size={15} /></button>
             </div>
           </SearchField>
-          <span className="flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-teal-800 px-4 py-2 text-sm font-bold text-white">
+          <p className="flex shrink-0 items-center justify-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-4 py-2 text-sm font-bold text-teal-900" aria-live="polite">
             <Moon size={14} aria-hidden="true" /> {nights} malam
-          </span>
+          </p>
         </div>
         {terlaluLama && <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">Lebih dari {hotel.malamMaks} malam? Tulis ke kami untuk tarif bulanan.</p>}
       </div>
 
-      <main className="mx-auto max-w-5xl px-6 py-10">
+      <div className="mx-auto max-w-5xl px-6 py-10">
         <h2 className="sr-only">Daftar kamar</h2>
         <div className="space-y-8">
           {rooms.map((r) => {
@@ -121,14 +135,14 @@ export default function HotelApp() {
                       <span className="flex items-center gap-1"><Maximize size={14} aria-hidden="true" /> {r.size}</span><span className="text-stone-400" aria-hidden="true">•</span>
                       <span className="flex items-center gap-1"><BedDouble size={14} aria-hidden="true" /> {r.bed}</span>
                     </div>
-                    <Link href={`/kamar/${r.id}`} className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">Foto & detail <ArrowRight size={14} aria-hidden="true" /></Link>
+                    <Link href={`/kamar/${r.id}`} className="mt-2 inline-flex items-center gap-1 py-1 text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">Foto & detail <ArrowRight size={14} aria-hidden="true" /></Link>
                   </div>
                   <div className="flex flex-col items-start justify-between gap-3 border-t border-stone-100 pt-5 md:flex-row md:items-end">
                     <div>
                       <p className="text-sm text-stone-700">Malam biasa · akhir pekan</p>
                       <p className="font-display text-2xl font-bold text-teal-900">{rupiah(r.price)} <span className="text-base font-normal text-stone-700">· {rupiah(r.akhirPekan)}</span></p>
                     </div>
-                    <button type="button" disabled={disabled} onClick={() => setRoomId(r.id)} aria-pressed={active}
+                    <button type="button" disabled={disabled} onClick={() => pilihKamar(r.id)} aria-pressed={active}
                       className={`w-full rounded-xl px-6 py-3 text-sm font-semibold transition md:w-auto ${
                         active ? 'bg-teal-800 text-white' : disabled ? 'cursor-not-allowed border border-stone-200 text-stone-600' : 'border border-teal-800 text-teal-900 hover:bg-teal-800 hover:text-white'
                       }`}>
@@ -149,8 +163,8 @@ export default function HotelApp() {
         )}
 
         {roomOk && rincian && (
-          <motion.form initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} onSubmit={confirm} className="mt-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-            <h2 className="font-display text-xl font-bold text-teal-950">Ringkasan pesanan</h2>
+          <form onSubmit={confirm} aria-labelledby="h-ringkasan" className="anim-naik mt-8 scroll-mt-24 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+            <h2 id="h-ringkasan" ref={judulRingkasan} tabIndex={-1} className="scroll-mt-28 font-display text-xl font-bold text-teal-950 outline-none">Ringkasan pesanan</h2>
             <dl className="mt-3 space-y-1.5 border-b border-stone-100 pb-4 text-sm text-stone-700">
               <Row label={room.name} value={`${fmtTanggal(checkIn, { day: 'numeric', month: 'short' })} → ${fmtTanggal(checkOut, { day: 'numeric', month: 'short' })}`} />
               {rincian.biasa > 0 && <Row label={`${rupiah(room.price)} × ${rincian.biasa} malam biasa`} value={rupiah(room.price * rincian.biasa)} />}
@@ -165,14 +179,13 @@ export default function HotelApp() {
             </div>
             <button type="submit" className="mt-5 w-full rounded-xl bg-teal-800 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-900">Simpan pesanan · {rupiah(rincian.total)}</button>
             <p className="mt-2 text-center text-xs text-stone-600">Purwarupa: tidak ada pembayaran dan tidak ada yang dikirim. Pesanan disimpan di peramban ini.</p>
-          </motion.form>
+          </form>
         )}
-      </main>
+      </div>
 
-      <AnimatePresence>
-        {done && (
-          <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDone(null)}>
-            <motion.div role="dialog" aria-modal="true" aria-labelledby="judul-selesai" initial={{ scale: 0.9, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="w-full max-w-sm rounded-2xl bg-white p-7 text-center shadow-xl">
+      {done && (
+          <div className="anim-pudar fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 p-5" onClick={() => setDone(null)}>
+            <div ref={dialog} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="judul-selesai" onClick={(e) => e.stopPropagation()} className="anim-skala w-full max-w-sm rounded-2xl bg-white p-7 text-center shadow-xl outline-none">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal-700 text-white"><Check size={28} /></div>
               <h2 id="judul-selesai" className="mt-4 font-display text-2xl font-bold text-teal-950">Pesanan tersimpan</h2>
               <p className="mt-1 text-sm text-stone-700">Kode <span className="font-mono font-semibold text-stone-900">{done.kode}</span> · atas nama {done.nama}</p>
@@ -187,11 +200,10 @@ export default function HotelApp() {
                 <Link href="/pesanan" className="rounded-xl bg-teal-800 py-3 text-sm font-semibold text-white hover:bg-teal-900">Pesanan saya</Link>
                 <button type="button" onClick={() => setDone(null)} className="rounded-xl border border-stone-300 py-3 text-sm font-semibold text-stone-800 hover:bg-stone-50">Tutup</button>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+            </div>
+          </div>
+      )}
+    </main>
   );
 }
 

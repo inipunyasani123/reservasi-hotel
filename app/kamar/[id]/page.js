@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Check, Users, Maximize, BedDouble } from 'lucide-react';
 import { hotel, rooms, getRoom } from '@/lib/data';
 import { rupiah } from '@/lib/waktu';
+import { halaman } from '@/lib/seo';
 
 export function generateStaticParams() {
   return rooms.map((r) => ({ id: r.id }));
@@ -13,12 +14,13 @@ export async function generateMetadata({ params }) {
   const { id } = await params;
   const r = getRoom(id);
   if (!r) return { title: 'Kamar tidak ditemukan' };
-  return {
-    title: r.name,
-    description: `${r.desc} ${r.size}, untuk ${r.capacity} orang, mulai ${rupiah(r.price)} per malam.`,
-    alternates: { canonical: `/kamar/${r.id}` },
-    openGraph: { images: [{ url: r.photos[0] }] },
-  };
+  return halaman({
+    judul: r.name,
+    deskripsi: `${r.desc} ${r.size}, untuk ${r.capacity} orang, mulai ${rupiah(r.price)} per malam.`,
+    path: `/kamar/${r.id}`,
+    gambar: r.photos[0],
+    alt: r.name,
+  });
 }
 
 export default async function KamarPage({ params }) {
@@ -29,7 +31,7 @@ export default async function KamarPage({ params }) {
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
-      <Link href="/kamar" className="inline-flex items-center gap-1 text-sm font-semibold text-stone-700 hover:text-teal-800"><ArrowLeft size={15} aria-hidden="true" /> Semua kamar</Link>
+      <Link href="/kamar" className="-my-2 inline-flex items-center gap-1 py-2 text-sm font-semibold text-stone-700 hover:text-teal-800"><ArrowLeft size={15} aria-hidden="true" /> Semua kamar</Link>
       <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-4xl font-bold text-teal-950 md:text-5xl">{r.name}</h1>

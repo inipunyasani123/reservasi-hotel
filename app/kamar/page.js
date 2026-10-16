@@ -2,12 +2,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { hotel, rooms } from '@/lib/data';
 import { rupiah } from '@/lib/waktu';
+import { halaman } from '@/lib/seo';
 
-export const metadata = {
-  title: 'Kamar & vila',
-  description: 'Kamar Taman, Suite Teluk, dan Vila Kolam di Tanjung Lengkung: luas, kapasitas, fasilitas, dan tarif malam biasa serta akhir pekan.',
-  alternates: { canonical: '/kamar' },
-};
+export const metadata = halaman({
+  judul: 'Kamar & vila',
+  deskripsi: 'Kamar Taman, Suite Teluk, dan Vila Kolam di Tanjung Lengkung: luas, kapasitas, fasilitas, dan tarif malam biasa serta akhir pekan.',
+  path: '/kamar',
+});
 
 export default function KamarIndex() {
   return (

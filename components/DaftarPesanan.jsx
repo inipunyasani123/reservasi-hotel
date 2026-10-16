@@ -59,7 +59,7 @@ export default function DaftarPesanan() {
                   {!sedang && (
                     <p className="mt-3 text-sm text-stone-700">{sisa >= hotel.batalGratis ? `Batal gratis sampai ${fmtTanggal(tambahHari(r.checkIn, -hotel.batalGratis), { weekday: 'long', day: 'numeric', month: 'long' })}.` : 'Sudah lewat batas batal gratis.'}</p>
                   )}
-                  {!sedang && <button type="button" onClick={() => batal(r)} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-red-800 hover:underline"><X size={15} aria-hidden="true" /> Batalkan</button>}
+                  {!sedang && <button type="button" onClick={() => batal(r)} className="mt-1 inline-flex items-center gap-1.5 py-2 text-sm font-semibold text-red-800 hover:underline"><X size={15} aria-hidden="true" /> Batalkan</button>}
                 </li>
               );
             })}
@@ -74,7 +74,7 @@ export default function DaftarPesanan() {
             {lalu.map((r) => (
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm text-stone-700">
                 <span>{r.roomName} · {fmtTanggal(r.checkIn, { day: 'numeric', month: 'short', year: 'numeric' })} · {r.nights} malam</span>
-                <button type="button" onClick={() => setPunyaku((p) => p.filter((x) => x.id !== r.id))} className="font-semibold text-stone-800 hover:underline">Hapus</button>
+                <button type="button" onClick={() => setPunyaku((p) => p.filter((x) => x.id !== r.id))} className="-my-2 py-2 font-semibold text-stone-800 hover:underline">Hapus</button>
               </li>
             ))}
           </ul>
